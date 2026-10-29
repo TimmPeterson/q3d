@@ -1,16 +1,16 @@
 # q3d
 
-Минималистичный редактор трёхмерных коммутативных диаграмм на Three.js и TypeScript. Работает в браузере, хранит диаграмму локально и собирается в статический сайт.
+A minimal editor for three-dimensional commutative diagrams, built with Three.js and TypeScript. It runs in the browser, stores diagrams locally, and builds into a static website.
 
-## Запуск
+## Getting started
 
-На Windows, если зависимости проекта уже установлены, запустите `start.cmd` двойным щелчком. Затем откройте http://127.0.0.1:5173/ и оставьте окно запуска открытым. Для остановки нажмите Ctrl+C в этом окне.
+On Windows, if the project dependencies are already installed, double-click `start.cmd`. Open http://127.0.0.1:5173/ and keep the terminal window open. Press Ctrl+C in that window to stop the server.
 
-Файл запуска использует Node.js из PATH либо встроенный Node.js Codex. Команда `pnpm` для такого запуска не требуется.
+The launcher uses Node.js from your PATH or the Node.js runtime bundled with Codex. Launching this way does not require the `pnpm` command.
 
-### Установка с нуля
+### Fresh installation
 
-Нужны Node.js 24 и pnpm 11.25.0.
+Requires Node.js 24 and pnpm 11.25.0.
 
 ```sh
 npm install --global pnpm@11.25.0
@@ -18,70 +18,70 @@ pnpm install
 pnpm dev
 ```
 
-Откройте адрес, который напечатает Vite. Для просмотра готовой сборки: `pnpm build`, затем `pnpm preview`.
+Open the URL printed by Vite. To preview a production build, run `pnpm build`, then `pnpm preview`.
 
-## Управление
+## Controls
 
-| Действие | Управление |
+| Action | Control |
 | --- | --- |
-| Выбор объектов | Инструмент курсора, `1` / `V` |
-| Множественный выбор | Shift + щелчок добавляет элемент к выделению или убирает его; Shift + щелчок по пустому месту сохраняет выделение |
-| Перемещение объекта | Выберите объект и тяните за цветную ось X, Y или Z |
-| Добавление объекта | Кнопка «+» или `2` / `N`: шар размером 0,2 в центре вида на выбранной плоскости; занятое место обходится автоматически |
-| Создание стрелки | `3` / `A`, щелчок по источнику, затем по цели; также можно протянуть от источника к цели |
-| Петля | В режиме стрелки дважды выбрать один и тот же объект |
-| Вращение камеры | Перетаскивание свободного пространства левой кнопкой |
-| Сдвиг камеры | Правая кнопка или Ctrl + левая кнопка на свободном пространстве |
-| Приближение | Колесо мыши |
-| Точное положение | Поля X, Y, Z в свойствах объекта |
-| Плоскость размещения | XY / XZ / YZ и глубина внизу слева |
-| Привязка с шагом 0,5 | Кнопка магнита или Shift при перемещении по осям |
-| Изменение подписи | Поле в свойствах; двойной щелчок по объекту или стрелке / Enter |
-| Удаление выбранного | Delete / Backspace |
-| Сброс инструмента и выделения | Esc |
-| Отмена / повтор | Ctrl Z / Ctrl Shift Z, также Ctrl Y |
-| Вписать диаграмму | `F` или кнопка рамки |
-| Виды по осям | Щелчок по X, Y, Z внизу справа |
-| Проекция без перспективы | Кнопка ортографической проекции рядом с кнопками ракурса |
-| Сохранение / открытие файла | Ctrl S / Ctrl O |
+| Select | Cursor tool, `1` / `V` |
+| Select multiple items | Shift+click toggles an item in the selection; Shift+click on empty space keeps the selection |
+| Move a node | Select it and drag the colored X, Y, or Z axis handle |
+| Add a node | `+` button or `2` / `N`: adds a sphere of size 0.2 at the center of the view on the selected plane, automatically avoiding occupied positions |
+| Create an arrow | `3` / `A`, then click the source and target; dragging from source to target also works |
+| Create a loop | In arrow mode, select the same node twice |
+| Orbit the camera | Left-drag on empty space |
+| Pan the camera | Right-drag or Ctrl+left-drag on empty space |
+| Zoom | Mouse wheel |
+| Set an exact position | X, Y, Z fields in the node properties |
+| Set the placement plane | XY / XZ / YZ and the depth field at the bottom left |
+| Snap in 0.5-unit steps | Magnet button or hold Shift while dragging an axis handle |
+| Edit a label | Label field in the properties; double-click a node or arrow / Enter |
+| Delete selected items | Delete / Backspace |
+| Reset the tool and selection | Esc |
+| Undo / redo | Ctrl+Z / Ctrl+Shift+Z; Ctrl+Y also redoes |
+| Fit the diagram in view | `F` or the frame button |
+| View along an axis | Click X, Y, or Z at the bottom right |
+| Use orthographic projection | Orthographic projection button next to the view controls |
+| Save / open a file | Ctrl+S / Ctrl+O |
 
-На macOS вместо Ctrl используются соответствующие сочетания с Command. На сенсорном экране камера вращается одним пальцем; сдвиг и масштабирование выполняются двумя.
+On macOS, use Command instead of Ctrl for the corresponding keyboard shortcuts. On a touchscreen, drag with one finger to orbit; use two fingers to pan and zoom.
 
-Начальная плоскость — горизонтальный пол XZ, вертикальная ось — Y. Сетка состоит из линий с более заметным шагом через пять клеток. Вращение камеры сохраняет вертикаль, сдвиг камеры идёт вдоль пола. Щелчки и двойные щелчки по пустому месту объектов не добавляют.
+The default plane is the horizontal XZ floor, with Y pointing up. The grid has stronger lines every five cells. Orbiting keeps the camera upright, and panning follows the floor. Clicking or double-clicking empty space does not add nodes.
 
-В свойствах объектов доступны шар, куб и ромб (октаэдр), размер, цвет и подпись. У стрелок — обычный тип, моно (крючок у источника), эпи (двойной наконечник), вложение `>->` (конус у начала и у конца), толщина, изгиб и разворот. Параллельные стрелки автоматически получают разные изгибы. Два бегунка в поле «Длина» независимо задают начало и конец стрелки на её траектории. Разворот сохраняет её положение и сокращение с обоих концов.
+Node properties include shape (sphere, cube, or diamond-shaped octahedron), size, color, and label. Arrow properties include type (ordinary, mono with a hooked tail, epi with a double head, or inclusion `>->` with a forward cone at each end), thickness, curvature, and reversal. Parallel arrows automatically receive different curvatures. The two handles in the Length control independently set the start and end of an arrow along its path. Reversing an arrow preserves its path and the trimming at both ends.
 
-Ортографическая проекция убирает перспективное уменьшение объектов вдали. Переключение сохраняет ракурс и масштаб в центре вида; вращение, перемещение по осям, создание стрелок и масштабирование доступны в обоих режимах.
+Orthographic projection removes the perspective effect that makes distant objects appear smaller. Switching projections preserves the viewing angle and scale at the center of the view. Orbiting, moving nodes along axes, drawing arrows, and zooming work in both modes.
 
-У выбранных вместе объектов появляется общий манипулятор в среднем центре их положений. Перемещение и примагничивание сдвигают всю группу одинаково, сохраняя расстояния между её членами. Поля X/Y/Z для группы задают её центр и также перемещают её целиком. Стрелки следуют за своими концами; выбор стрелки сам по себе не добавляет её концы в группу.
+Selected nodes share a movement gizmo at the average of their positions. Moving or snapping translates the entire group by the same amount, preserving the distances between its members. The group's X/Y/Z fields set its center and also move the group as a whole. Arrows follow their endpoints; selecting an arrow does not automatically select its endpoints.
 
-Свойства редактируются у всех выбранных элементов одновременно. Разные значения обозначены «—», галочка с разными состояниями — промежуточной отметкой. Меняется только явно отредактированное свойство. Для набора из объектов и стрелок показываются только общие свойства: подпись, билборд и цвет. Сокращение нескольких стрелок ограничивается так, чтобы у каждой сохранялась допустимая длина. Групповое редактирование, перемещение, разворот стрелок и удаление отменяются одним действием; удаление объектов также удаляет связанные с ними стрелки.
+Property edits apply to all selected items. Mixed values appear as “—”; checkboxes with mixed states show an indeterminate mark. Only the property you explicitly edit changes. A selection containing both nodes and arrows shows only their shared properties: label, billboard mode, and color. Trimming multiple arrows is constrained so that each retains a valid length. Group edits, movement, arrow reversal, and deletion can each be undone in one step. Deleting nodes also deletes their connected arrows.
 
-«Билборд» поворачивает подпись к камере. Если снять галочку, подпись остаётся в мировой плоскости XY. Подписи — обычный Unicode-текст, без обработки LaTeX. Проверка коммутативности не выполняется.
+Billboard mode makes a label face the camera. When disabled, the label remains fixed in the world XY plane. Labels use plain Unicode text without LaTeX processing. The editor does not check commutativity.
 
-Диаграмма автоматически сохраняется в браузере. Кнопка сохранения выгружает `.q3d.json`; кнопка открытия загружает такой файл. Новая диаграмма и загрузка файла отменяются через Ctrl Z. В папке `examples` лежит готовый `cube.q3d.json`, который можно открыть в редакторе.
+The diagram is saved automatically in your browser. The save button downloads a `.q3d.json` file; the open button imports one. Creating a new diagram or importing a file can be undone with Ctrl+Z. The `examples` directory includes `cube.q3d.json`, ready to open in the editor.
 
-`examples/kernel-cokernel-cube.q3d.json` — симметричная схема ядер, коядер и стрелок сравнения коммутативного куба: 262 объекта и 546 стрелок. Построение и обозначения описаны в [сопроводительном файле](examples/kernel-cokernel-cube.md).
+`examples/kernel-cokernel-cube.q3d.json` is a symmetric diagram of kernels, cokernels, and comparison maps for a commutative cube, containing 262 objects and 546 arrows. Its construction and visual conventions are described in the [accompanying notes](examples/kernel-cokernel-cube.md) (in Russian).
 
-Файлы предыдущей версии открываются с полной длиной стрелок. Удалённый совмещённый тип «моно + эпи» при загрузке преобразуется в «моно».
+Files from the previous version open with full-length arrows. The removed combined “mono + epi” type is converted to “mono” on import.
 
 ## GitHub Pages
 
-1. Загрузите проект в GitHub-репозиторий с веткой `main`.
-2. В **Settings → Pages → Build and deployment → Source** выберите **GitHub Actions**.
-3. Workflow `.github/workflows/pages.yml` проверит проект, соберёт и опубликует `dist` при push в `main`. Его также можно запустить вручную во вкладке Actions.
+1. Push the project to a GitHub repository with a `main` branch.
+2. Under **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**.
+3. The workflow in `.github/workflows/pages.yml` tests, builds, and deploys `dist` on every push to `main`. You can also run it manually from the Actions tab.
 
-Пути в сборке относительные: проект работает как на `<user>.github.io`, так и на `<user>.github.io/<repository>/`. Содержимое `dist` можно разместить и на другом статическом хостинге. Сервер приложения и внешние CDN не нужны; Three.js входит в сборку. Для локального просмотра файлов `dist` используйте HTTP-сервер, например `pnpm preview`.
+The build uses relative paths, so it works at both `<user>.github.io` and `<user>.github.io/<repository>/`. You can also host the contents of `dist` on any other static host. No application server or external CDN is required; Three.js is bundled with the app. To preview `dist` locally, use an HTTP server such as `pnpm preview`.
 
-## Структура
+## Project structure
 
 ```text
 src/
-  model/    типы, документ, история, проверка файлов, сохранение
-  scene/    Three.js, геометрия стрелок, текстовые подписи
-  editor/   взаимодействие мышью и размещение объектов
-  ui/       панель инструментов и свойства
-  main.ts   соединение модели, сцены и интерфейса
+  model/    types, document, history, file validation, persistence
+  scene/    Three.js rendering, arrow geometry, text labels
+  editor/   pointer interactions and node placement
+  ui/       toolbar and property panels
+  main.ts   connects the model, scene, and interface
 ```
 
-`pnpm test` проверяет историю изменений, удаление связанных стрелок, сохранение и валидацию документов, геометрию и разворот стрелок. `pnpm build` проверяет типы и создаёт готовую сборку.
+`pnpm test` checks edit history, deletion of connected arrows, document serialization and validation, arrow geometry and reversal, and the kernel/cokernel cube example. `pnpm build` checks types and creates the production build.
