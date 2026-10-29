@@ -81,7 +81,7 @@ export class DiagramView {
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'scene';
     this.canvas.tabIndex = 0;
-    this.canvas.setAttribute('aria-label', 'Трёхмерная диаграмма');
+    this.canvas.setAttribute('aria-label', '3D diagram');
     container.prepend(this.canvas);
 
     this.rig = new CameraRig(this.canvas, () => { this.dirty = true; });

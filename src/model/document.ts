@@ -1,7 +1,7 @@
 import type { ArrowKind, Diagram, DiagramEdge, DiagramNode, LabelMode, Shape, Vec3 } from './types.ts';
 import { ARROW_MIN_SPAN } from './types.ts';
 
-const fail = (): never => { throw new Error('Некорректный файл диаграммы'); };
+const fail = (): never => { throw new Error('Invalid diagram file'); };
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return fail();
   return value as Record<string, unknown>;

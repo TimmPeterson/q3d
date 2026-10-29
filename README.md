@@ -44,6 +44,7 @@ Open the URL printed by Vite. To preview a production build, run `pnpm build`, t
 | View along an axis | Click X, Y, or Z at the bottom right |
 | Use orthographic projection | Orthographic projection button next to the view controls |
 | Save / open a file | Ctrl+S / Ctrl+O |
+| Open an example | `Ex` button at the top right, then choose a diagram |
 
 On macOS, use Command instead of Ctrl for the corresponding keyboard shortcuts. On a touchscreen, drag with one finger to orbit; use two fingers to pan and zoom.
 
@@ -59,7 +60,7 @@ Property edits apply to all selected items. Mixed values appear as “—”; ch
 
 Billboard mode makes a label face the camera. When disabled, the label remains fixed in the world XY plane. Labels use plain Unicode text without LaTeX processing. The editor does not check commutativity.
 
-The diagram is saved automatically in your browser. The save button downloads a `.q3d.json` file; the open button imports one. Creating a new diagram or importing a file can be undone with Ctrl+Z. The `examples` directory includes `cube.q3d.json`, ready to open in the editor.
+The diagram is saved automatically in your browser. The save button downloads a `.q3d.json` file; the open button imports one. Creating a new diagram or importing a file can be undone with Ctrl+Z. The `Ex` menu at the top right opens the bundled Commutative cube and Kernels and cokernels examples. Choosing an example replaces the current diagram, fits it in view, and can be undone with Ctrl+Z. The same JSON files are available in the `examples` directory. Both examples are included in the static build for GitHub Pages.
 
 `examples/kernel-cokernel-cube.q3d.json` is a symmetric diagram of kernels, cokernels, and comparison maps for a commutative cube, containing 262 objects and 546 arrows. Its construction and visual conventions are described in the [accompanying notes](examples/kernel-cokernel-cube.md) (in Russian).
 

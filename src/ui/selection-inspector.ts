@@ -4,7 +4,7 @@ import { ARROW_MIN_SPAN } from '../model/types.ts';
 import type { CommonProperties, Diagram, DiagramEdge, DiagramNode, SelectionSet } from '../model/types.ts';
 
 const PALETTE = ['#45494f', '#557aa6', '#7b6ba6', '#599482', '#c78358', '#bd6770'];
-const MIXED = 'Разные значения';
+const MIXED = 'Mixed values';
 type InspectorMode = 'nodes' | 'edges' | 'mixed';
 
 export interface InspectorActions {
@@ -76,34 +76,34 @@ export class SelectionInspector {
     const count = this.items.length;
     const isNode = this.mode === 'nodes';
     const isEdge = this.mode === 'edges';
-    const title = this.mode === 'mixed' ? `Выбрано · ${count}`
-      : isNode ? (count === 1 ? 'Объект' : `Объекты · ${count}`)
-        : count === 1 ? 'Стрелка' : `Стрелки · ${count}`;
+    const title = this.mode === 'mixed' ? `Selected · ${count}`
+      : isNode ? (count === 1 ? 'Node' : `Nodes · ${count}`)
+        : count === 1 ? 'Arrow' : `Arrows · ${count}`;
     this.element.innerHTML = `
       <div class="inspector-header"><span>${title}</span><div class="header-actions">
-        ${isEdge ? iconButton('reverse', 'reverse', 'Развернуть стрелки') : ''}
-        ${iconButton('remove', 'trash', 'Удалить · Del')}
-        ${iconButton('deselect', 'close', 'Снять выделение · Esc')}
+        ${isEdge ? iconButton('reverse', 'reverse', 'Reverse arrows') : ''}
+        ${iconButton('remove', 'trash', 'Delete · Del')}
+        ${iconButton('deselect', 'close', 'Deselect · Esc')}
       </div></div>
       <div class="inspector-body">
-        <label class="field-label" for="item-label">Подпись</label>
+        <label class="field-label" for="item-label">Label</label>
         <input id="item-label" class="label-input" data-field="label" maxlength="160" autocomplete="off" spellcheck="false" />
-        <label class="checkbox-field" title="Выключено — подпись закреплена в плоскости XY"><input type="checkbox" data-field="billboard" aria-label="Билборд" /><span>Билборд</span></label>
+        <label class="checkbox-field" title="When disabled, the label is fixed in the XY plane"><input type="checkbox" data-field="billboard" aria-label="Billboard" /><span>Billboard</span></label>
         ${this.mode !== 'mixed' ? `
           <div class="inspector-rule"></div>
-          <div class="field-label">${isNode ? 'Форма' : 'Тип'}</div>
-          <div class="segmented ${isNode ? 'shapes' : 'arrow-kinds'}" role="group" aria-label="${isNode ? 'Форма объекта' : 'Тип стрелки'}">
-            ${isNode ? ['sphere', 'cube', 'diamond'].map((shape, index) => `<button type="button" data-shape="${shape}" title="${['Шар', 'Куб', 'Ромб'][index]}" aria-label="${['Шар', 'Куб', 'Ромб'][index]}" aria-pressed="false">${icon(shape)}</button>`).join('')
-              : ['arrow', 'mono', 'epi', 'inclusion'].map((kind, index) => `<button type="button" data-kind="${kind}" title="${['Обычная', 'Мономорфизм', 'Эпиморфизм', 'Вложение'][index]}" aria-label="${['Обычная стрелка', 'Мономорфизм', 'Эпиморфизм', 'Вложение'][index]}" aria-pressed="false">${icon(kind)}</button>`).join('')}
+          <div class="field-label">${isNode ? 'Shape' : 'Type'}</div>
+          <div class="segmented ${isNode ? 'shapes' : 'arrow-kinds'}" role="group" aria-label="${isNode ? 'Node shape' : 'Arrow type'}">
+            ${isNode ? ['sphere', 'cube', 'diamond'].map((shape, index) => `<button type="button" data-shape="${shape}" title="${['Sphere', 'Cube', 'Diamond'][index]}" aria-label="${['Sphere', 'Cube', 'Diamond'][index]}" aria-pressed="false">${icon(shape)}</button>`).join('')
+              : ['arrow', 'mono', 'epi', 'inclusion'].map((kind, index) => `<button type="button" data-kind="${kind}" title="${['Ordinary', 'Monomorphism', 'Epimorphism', 'Inclusion'][index]}" aria-label="${['Ordinary arrow', 'Monomorphism', 'Epimorphism', 'Inclusion'][index]}" aria-pressed="false">${icon(kind)}</button>`).join('')}
           </div>
-          ${isNode ? this.slider('size', 'Размер', 0.1, 4, 0.01) : this.lengthControls() + this.slider('width', 'Толщина', 0.015, 0.12, 0.001) + this.slider('bend', 'Изгиб', -4, 4, 0.05)}
+          ${isNode ? this.slider('size', 'Size', 0.1, 4, 0.01) : this.lengthControls() + this.slider('width', 'Thickness', 0.015, 0.12, 0.001) + this.slider('bend', 'Curvature', -4, 4, 0.05)}
         ` : ''}
-        <div class="field-label color-heading">Цвет</div>
-        <div class="color-palette" role="group" aria-label="Цвет">
-          ${PALETTE.map((color, index) => `<button type="button" class="color-swatch" data-color="${color}" style="--swatch:${color}" aria-label="${['Графитовый', 'Синий', 'Фиолетовый', 'Зелёный', 'Охра', 'Розовый'][index]}" aria-pressed="false"></button>`).join('')}
-          <label class="custom-color" title="Другой цвет"><input type="color" data-field="color" aria-label="Другой цвет" /><span></span></label>
+        <div class="field-label color-heading">Color</div>
+        <div class="color-palette" role="group" aria-label="Color">
+          ${PALETTE.map((color, index) => `<button type="button" class="color-swatch" data-color="${color}" style="--swatch:${color}" aria-label="${['Graphite', 'Blue', 'Purple', 'Green', 'Ochre', 'Pink'][index]}" aria-pressed="false"></button>`).join('')}
+          <label class="custom-color" title="Custom color"><input type="color" data-field="color" aria-label="Custom color" /><span></span></label>
         </div>
-        ${isNode ? `<div class="inspector-rule"></div>${count > 1 ? '<div class="field-label position-heading">Центр группы</div>' : ''}<div class="position-fields" role="group" aria-label="${count > 1 ? 'Центр группы' : 'Положение'}">${['X', 'Y', 'Z'].map((axis, index) => `<label><span>${axis}</span><input type="number" data-field="position-${index}" step="any" min="-100000" max="100000" aria-label="Координата ${axis}" /></label>`).join('')}</div>` : ''}
+        ${isNode ? `<div class="inspector-rule"></div>${count > 1 ? '<div class="field-label position-heading">Group center</div>' : ''}<div class="position-fields" role="group" aria-label="${count > 1 ? 'Group center' : 'Position'}">${['X', 'Y', 'Z'].map((axis, index) => `<label><span>${axis}</span><input type="number" data-field="position-${index}" step="any" min="-100000" max="100000" aria-label="Coordinate ${axis}" /></label>`).join('')}</div>` : ''}
       </div>
     `;
     this.element.querySelectorAll<HTMLElement>('[data-tip]').forEach((item) => { item.title = item.dataset.tip ?? ''; });
@@ -115,11 +115,11 @@ export class SelectionInspector {
 
   private lengthControls(): string {
     return `<div class="length-field">
-      <div class="length-heading"><span class="field-label">Длина</span><span class="range-values"><output data-range-start>0%</output><span>—</span><output data-range-end>100%</output></span></div>
-      <div class="range-pair" role="group" aria-label="Длина стрелки">
+      <div class="length-heading"><span class="field-label">Length</span><span class="range-values"><output data-range-start>0%</output><span>—</span><output data-range-end>100%</output></span></div>
+      <div class="range-pair" role="group" aria-label="Arrow length">
         <div class="range-track"></div><div class="range-fill"></div>
-        <input type="range" data-field="start" min="0" max="100" step="1" value="0" aria-label="Начало стрелки" />
-        <input type="range" data-field="end" min="0" max="100" step="1" value="100" aria-label="Конец стрелки" />
+        <input type="range" data-field="start" min="0" max="100" step="1" value="0" aria-label="Arrow start" />
+        <input type="range" data-field="end" min="0" max="100" step="1" value="100" aria-label="Arrow end" />
       </div>
     </div>`;
   }
@@ -206,7 +206,7 @@ export class SelectionInspector {
     }
     const customColor = this.element.querySelector<HTMLElement>('.custom-color');
     customColor?.classList.toggle('is-mixed', color === undefined);
-    if (customColor) customColor.title = color === undefined ? MIXED : 'Другой цвет';
+    if (customColor) customColor.title = color === undefined ? MIXED : 'Custom color';
     this.element.style.setProperty('--custom-color', color ?? this.items[0].color);
     this.element.querySelectorAll<HTMLElement>('[data-color]').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.color === color));

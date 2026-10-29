@@ -1,9 +1,11 @@
 import './style.css';
 import { DiagramStore } from './model/store.ts';
 import { parseDiagram } from './model/document.ts';
+import { loadExample } from './model/examples.ts';
+import type { ExampleId } from './model/examples.ts';
 import { downloadDocument, restoreDocument, saveDocument } from './model/persistence.ts';
 import { emptyDiagram } from './model/types.ts';
-import type { Selection, SelectionSet, Tool, Vec3 } from './model/types.ts';
+import type { Diagram, Selection, SelectionSet, Tool, Vec3 } from './model/types.ts';
 import { chooseSelection, nodeCenter, pruneSelection, selectedItems, selectionKey } from './model/selection.ts';
 import { DiagramView } from './scene/view.ts';
 import { EditorInteractions } from './editor/interactions.ts';
@@ -19,6 +21,7 @@ class Editor {
   private saveTimer = 0;
   private storageWarningShown = false;
   private abort = new AbortController();
+  private exampleRequest: AbortController | null = null;
   private unsubscribe: () => void;
 
   constructor(root: HTMLElement) {
@@ -28,15 +31,10 @@ class Editor {
       addNode: () => this.addNode(),
       undo: () => { this.interactions.cancel(); this.store.undo(); },
       redo: () => { this.interactions.cancel(); this.store.redo(); },
-      newDocument: () => {
-        this.interactions.cancel();
-        this.select(null);
-        this.store.replace(emptyDiagram());
-        this.setTool('select');
-        this.view.focus(this.store.document, 'home');
-      },
+      newDocument: () => this.replaceDocument(emptyDiagram()),
       open: (file) => { void this.open(file); },
       save: () => downloadDocument(this.store.document),
+      example: (id) => { void this.openExample(id); },
       deselect: () => this.select(null),
       remove: () => this.remove(),
       reverse: () => {
@@ -123,6 +121,7 @@ class Editor {
   }
 
   private onDocumentChange(): void {
+    this.cancelExampleLoad();
     this.selection = pruneSelection(this.store.document, this.selection);
     this.view.sync(this.store.document);
     this.view.select(this.selection, this.arrowSource);
@@ -136,21 +135,50 @@ class Editor {
   private persist = (): void => {
     if (!saveDocument(this.store.document) && !this.storageWarningShown) {
       this.storageWarningShown = true;
-      this.ui.toast('Автосохранение недоступно. Сохраните диаграмму в файл.');
+      this.ui.toast('Autosave is unavailable. Save your diagram to a file.');
     }
   };
 
   private async open(file: File): Promise<void> {
+    this.cancelExampleLoad();
     try {
-      if (file.size > 5 * 1024 * 1024) throw new Error('Файл больше 5 МБ');
+      if (file.size > 5 * 1024 * 1024) throw new Error('File exceeds 5 MB');
       const diagram = parseDiagram(JSON.parse(await file.text()));
-      this.interactions.cancel();
-      this.select(null);
-      this.store.replace(diagram);
-      this.setTool('select');
-      this.view.focus(diagram, 'home');
+      this.replaceDocument(diagram);
     } catch (error) {
-      this.ui.toast(error instanceof Error && error.message === 'Файл больше 5 МБ' ? error.message : 'Не удалось открыть диаграмму');
+      this.ui.toast(error instanceof Error && error.message === 'File exceeds 5 MB' ? error.message : 'Could not open diagram');
+    }
+  }
+
+  private replaceDocument(diagram: Diagram): void {
+    this.cancelExampleLoad();
+    this.interactions.cancel();
+    this.select(null);
+    this.store.replace(diagram);
+    this.setTool('select');
+    this.view.focus(diagram, 'home');
+  }
+
+  private cancelExampleLoad(): void {
+    if (!this.exampleRequest) return;
+    this.exampleRequest.abort();
+    this.exampleRequest = null;
+    this.ui.setExamplesLoading(false);
+  }
+
+  private async openExample(id: ExampleId): Promise<void> {
+    this.cancelExampleLoad();
+    const request = new AbortController();
+    this.exampleRequest = request;
+    this.ui.setExamplesLoading(true);
+    try {
+      const diagram = await loadExample(id, request.signal);
+      if (request.signal.aborted) return;
+      this.replaceDocument(diagram);
+    } catch {
+      if (!request.signal.aborted) this.ui.toast('Could not load example.');
+    } finally {
+      if (this.exampleRequest === request) this.cancelExampleLoad();
     }
   }
 
@@ -196,6 +224,7 @@ class Editor {
   };
 
   dispose(): void {
+    this.cancelExampleLoad();
     this.persist();
     window.clearTimeout(this.saveTimer);
     this.abort.abort();
@@ -216,7 +245,7 @@ if (root) {
     root.replaceChildren();
     const message = document.createElement('p');
     message.className = 'startup-error';
-    message.textContent = 'Не удалось запустить 3D-редактор. Проверьте, включён ли WebGL 2.';
+    message.textContent = 'Could not start the 3D editor. Check that WebGL 2 is enabled.';
     root.append(message);
   }
 }

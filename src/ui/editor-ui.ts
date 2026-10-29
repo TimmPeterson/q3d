@@ -1,5 +1,7 @@
 import { iconButton } from './icons.ts';
 import { SelectionInspector } from './selection-inspector.ts';
+import { ExampleMenu } from './example-menu.ts';
+import type { ExampleId } from '../model/examples.ts';
 import type { InspectorActions } from './selection-inspector.ts';
 import type { Diagram, Projection, SelectionSet, Tool, WorkPlane } from '../model/types.ts';
 
@@ -11,6 +13,7 @@ export interface UIActions extends InspectorActions {
   newDocument: () => void;
   open: (file: File) => void;
   save: () => void;
+  example: (id: ExampleId) => void;
   workplane: (plane: WorkPlane, depth: number, grid: boolean, snap: boolean) => void;
   view: (axis: 'x' | 'y' | 'z' | 'home' | undefined) => void;
   projection: (projection: Projection) => void;
@@ -20,6 +23,7 @@ export class EditorUI {
   private root: HTMLElement;
   private actions: UIActions;
   private inspector: SelectionInspector;
+  private examples: ExampleMenu;
   private plane: WorkPlane = 'XZ';
   private projection: Projection = 'perspective';
   private grid = true;
@@ -34,52 +38,54 @@ export class EditorUI {
     root.insertAdjacentHTML('beforeend', `
       <div class="top-left">
         <div class="wordmark" aria-label="q3d">q<span>3d</span></div>
-        <nav class="toolbar panel" aria-label="Инструменты">
+        <nav class="toolbar panel" aria-label="Tools">
           <div class="tool-group">
-            ${iconButton('tool-select', 'cursor', 'Выбрать · 1', 'aria-pressed="true"')}
-            ${iconButton('add-node', 'plus', 'Добавить объект · 2')}
-            ${iconButton('tool-arrow', 'arrow', 'Стрелка · 3', 'aria-pressed="false"')}
+            ${iconButton('tool-select', 'cursor', 'Select · 1', 'aria-pressed="true"')}
+            ${iconButton('add-node', 'plus', 'Add node · 2')}
+            ${iconButton('tool-arrow', 'arrow', 'Arrow · 3', 'aria-pressed="false"')}
           </div>
           <span class="divider"></span>
-          ${iconButton('undo', 'undo', 'Отменить · Ctrl Z', 'disabled')}
-          ${iconButton('redo', 'redo', 'Повторить · Ctrl Shift Z', 'disabled')}
+          ${iconButton('undo', 'undo', 'Undo · Ctrl Z', 'disabled')}
+          ${iconButton('redo', 'redo', 'Redo · Ctrl Shift Z', 'disabled')}
         </nav>
       </div>
-      <nav class="file-toolbar panel" aria-label="Диаграмма">
-        ${iconButton('new', 'new', 'Новая диаграмма')}
-        ${iconButton('open', 'open', 'Открыть · Ctrl O')}
-        ${iconButton('save', 'save', 'Сохранить · Ctrl S')}
+      <nav class="file-toolbar panel" aria-label="Diagram">
+        ${iconButton('new', 'new', 'New diagram')}
+        ${iconButton('open', 'open', 'Open · Ctrl O')}
+        ${iconButton('save', 'save', 'Save · Ctrl S')}
+        <div class="examples-control"></div>
       </nav>
-      <aside class="inspector panel" aria-label="Свойства" hidden></aside>
+      <aside class="inspector panel" aria-label="Properties" hidden></aside>
       <div class="bottom-left">
-        <div class="plane-toolbar panel" aria-label="Плоскость размещения">
-          <div class="plane-options" role="group" aria-label="Плоскость">
-            <button type="button" data-plane="XY" aria-pressed="false" data-tip="Плоскость XY">XY</button>
-            <button type="button" data-plane="XZ" aria-pressed="true" data-tip="Плоскость XZ">XZ</button>
-            <button type="button" data-plane="YZ" aria-pressed="false" data-tip="Плоскость YZ">YZ</button>
+        <div class="plane-toolbar panel" aria-label="Placement plane">
+          <div class="plane-options" role="group" aria-label="Plane">
+            <button type="button" data-plane="XY" aria-pressed="false" data-tip="Plane XY">XY</button>
+            <button type="button" data-plane="XZ" aria-pressed="true" data-tip="Plane XZ">XZ</button>
+            <button type="button" data-plane="YZ" aria-pressed="false" data-tip="Plane YZ">YZ</button>
           </div>
           <span class="divider"></span>
-          <label class="depth-field" data-tip="Глубина плоскости"><span id="depth-axis">Y</span><input id="plane-depth" type="number" value="0" step="any" min="-100000" max="100000" aria-label="Глубина плоскости" /></label>
+          <label class="depth-field" data-tip="Plane depth"><span id="depth-axis">Y</span><input id="plane-depth" type="number" value="0" step="any" min="-100000" max="100000" aria-label="Plane depth" /></label>
           <span class="divider"></span>
-          ${iconButton('grid', 'grid', 'Сетка', 'aria-pressed="true"')}
-          ${iconButton('snap', 'snap', 'Привязка к сетке · Shift', 'aria-pressed="false"')}
+          ${iconButton('grid', 'grid', 'Grid', 'aria-pressed="true"')}
+          ${iconButton('snap', 'snap', 'Snap to grid · Shift', 'aria-pressed="false"')}
         </div>
       </div>
       <div class="view-controls">
         <div class="view-buttons panel">
-          ${iconButton('fit', 'fit', 'Вписать диаграмму · F')}
-          ${iconButton('home', 'home', 'Исходный ракурс')}
-          ${iconButton('projection', 'orthographic', 'Ортографическая проекция', 'aria-pressed="false"')}
+          ${iconButton('fit', 'fit', 'Fit diagram · F')}
+          ${iconButton('home', 'home', 'Home view')}
+          ${iconButton('projection', 'orthographic', 'Orthographic projection', 'aria-pressed="false"')}
         </div>
-        <svg class="axis-widget" viewBox="0 0 100 100" role="group" aria-label="Ориентация">
+        <svg class="axis-widget" viewBox="0 0 100 100" role="group" aria-label="Orientation">
           <circle cx="50" cy="50" r="3" fill="#d5d6d9" />
-          ${['x', 'y', 'z'].map((axis) => `<g class="axis axis-${axis}" data-axis="${axis}" tabindex="0" role="button" aria-label="Вид по оси ${axis.toUpperCase()}"><line x1="50" y1="50" x2="50" y2="50"/><circle cx="50" cy="50" r="10"/><text x="50" y="50">${axis.toUpperCase()}</text></g>`).join('')}
+          ${['x', 'y', 'z'].map((axis) => `<g class="axis axis-${axis}" data-axis="${axis}" tabindex="0" role="button" aria-label="View along axis ${axis.toUpperCase()}"><line x1="50" y1="50" x2="50" y2="50"/><circle cx="50" cy="50" r="10"/><text x="50" y="50">${axis.toUpperCase()}</text></g>`).join('')}
         </svg>
       </div>
       <div class="toast" role="status" aria-live="polite" hidden></div>
       <input type="file" id="open-file" accept=".json,.q3d,application/json" hidden />
     `);
     this.inspector = new SelectionInspector(this.get('.inspector'), actions);
+    this.examples = new ExampleMenu(this.get('.examples-control'), actions.example);
     root.addEventListener('click', this.onClick, { signal: this.abort.signal });
     root.addEventListener('keydown', this.onKeyDown, { signal: this.abort.signal });
     root.addEventListener('input', this.onInput, { signal: this.abort.signal });
@@ -156,6 +162,8 @@ export class EditorUI {
 
   openFile(): void { this.get<HTMLInputElement>('#open-file').click(); }
 
+  setExamplesLoading(loading: boolean): void { this.examples.setLoading(loading); }
+
   private updateWorkplane(): void {
     this.root.querySelectorAll<HTMLButtonElement>('[data-plane]').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.plane === this.plane));
@@ -213,6 +221,7 @@ export class EditorUI {
   }
 
   dispose(): void {
+    this.examples.dispose();
     this.inspector.dispose();
     this.abort.abort();
     window.clearTimeout(this.toastTimer);
