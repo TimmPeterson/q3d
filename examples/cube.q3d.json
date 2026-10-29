@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "a", "position": [-2, 1.6, 1.8], "shape": "sphere", "size": 0.38, "color": "#45494f", "label": "A", "labelMode": "billboard" },
+    { "id": "b", "position": [2, 1.6, 1.8], "shape": "sphere", "size": 0.38, "color": "#45494f", "label": "B", "labelMode": "billboard" },
+    { "id": "c", "position": [-2, -1.6, 1.8], "shape": "sphere", "size": 0.38, "color": "#45494f", "label": "C", "labelMode": "billboard" },
+    { "id": "d", "position": [2, -1.6, 1.8], "shape": "sphere", "size": 0.38, "color": "#45494f", "label": "D", "labelMode": "billboard" },
+    { "id": "a1", "position": [-2, 1.6, -1.8], "shape": "cube", "size": 0.38, "color": "#557aa6", "label": "A′", "labelMode": "billboard" },
+    { "id": "b1", "position": [2, 1.6, -1.8], "shape": "cube", "size": 0.38, "color": "#557aa6", "label": "B′", "labelMode": "billboard" },
+    { "id": "c1", "position": [-2, -1.6, -1.8], "shape": "diamond", "size": 0.44, "color": "#557aa6", "label": "C′", "labelMode": "billboard" },
+    { "id": "d1", "position": [2, -1.6, -1.8], "shape": "diamond", "size": 0.44, "color": "#557aa6", "label": "D′", "labelMode": "billboard" }
+  ],
+  "edges": [
+    { "id": "ab", "source": "a", "target": "b", "kind": "arrow", "color": "#45494f", "width": 0.03, "bend": 0, "label": "f", "labelMode": "billboard" },
+    { "id": "ac", "source": "a", "target": "c", "kind": "mono", "color": "#45494f", "width": 0.03, "bend": 0, "label": "i", "labelMode": "billboard" },
+    { "id": "bd", "source": "b", "target": "d", "kind": "arrow", "color": "#45494f", "width": 0.03, "bend": 0, "label": "j", "labelMode": "billboard" },
+    { "id": "cd", "source": "c", "target": "d", "kind": "epi", "color": "#45494f", "width": 0.03, "bend": 0, "label": "g", "labelMode": "billboard" },
+    { "id": "a1b1", "source": "a1", "target": "b1", "kind": "arrow", "color": "#557aa6", "width": 0.03, "bend": 0, "label": "f′", "labelMode": "billboard" },
+    { "id": "a1c1", "source": "a1", "target": "c1", "kind": "mono", "color": "#557aa6", "width": 0.03, "bend": 0, "label": "i′", "labelMode": "billboard" },
+    { "id": "b1d1", "source": "b1", "target": "d1", "kind": "arrow", "color": "#557aa6", "width": 0.03, "bend": 0, "label": "j′", "labelMode": "billboard" },
+    { "id": "c1d1", "source": "c1", "target": "d1", "kind": "epi", "color": "#557aa6", "width": 0.03, "bend": 0, "label": "g′", "labelMode": "billboard" },
+    { "id": "aa1", "source": "a", "target": "a1", "kind": "arrow", "color": "#c78358", "width": 0.03, "bend": 0, "label": "α", "labelMode": "billboard" },
+    { "id": "bb1", "source": "b", "target": "b1", "kind": "arrow", "color": "#c78358", "width": 0.03, "bend": 0, "label": "β", "labelMode": "billboard" },
+    { "id": "cc1", "source": "c", "target": "c1", "kind": "arrow", "color": "#c78358", "width": 0.03, "bend": 0, "label": "γ", "labelMode": "billboard" },
+    { "id": "dd1", "source": "d", "target": "d1", "kind": "arrow", "color": "#c78358", "width": 0.03, "bend": 0, "label": "δ", "labelMode": "billboard" }
+  ]
+}
