@@ -1,5 +1,5 @@
 import type { ArrowKind, Diagram, DiagramEdge, DiagramNode, LabelMode, Shape, Vec3 } from './types.ts';
-import { ARROW_MIN_SPAN } from './types.ts';
+import { ARROW_HEAD_SCALE_MAX, ARROW_HEAD_SCALE_MIN, ARROW_MIN_SPAN, DIAGRAM_MAX_EDGES, DIAGRAM_MAX_NODES, EDGE_DEFAULTS } from './types.ts';
 
 const fail = (): never => { throw new Error('Invalid diagram file'); };
 const record = (value: unknown): Record<string, unknown> => {
@@ -26,7 +26,7 @@ const color = (value: unknown): string => {
 export function parseDiagram(input: unknown): Diagram {
   const root = record(input);
   if (root.version !== 1 || !Array.isArray(root.nodes) || !Array.isArray(root.edges)) return fail();
-  if (root.nodes.length > 2000 || root.edges.length > 5000) return fail();
+  if (root.nodes.length > DIAGRAM_MAX_NODES || root.edges.length > DIAGRAM_MAX_EDGES) return fail();
 
   const ids = new Set<string>();
   const id = (value: unknown): string => {
@@ -62,6 +62,7 @@ export function parseDiagram(input: unknown): Diagram {
       kind: choice<ArrowKind>(edge.kind === 'mono-epi' ? 'mono' : edge.kind, ['arrow', 'mono', 'epi', 'inclusion']),
       color: color(edge.color),
       width: number(edge.width, 0.015, 0.12),
+      headScale: edge.headScale === undefined ? EDGE_DEFAULTS.headScale : number(edge.headScale, ARROW_HEAD_SCALE_MIN, ARROW_HEAD_SCALE_MAX),
       bend: number(edge.bend, -4, 4),
       start, end,
       label: text(edge.label),

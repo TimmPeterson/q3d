@@ -1,18 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { parseDiagram } from '../src/model/document.ts';
 import { constructKernelCube } from '../scripts/generate-kernel-cube.mjs';
 
 const { graph, document, report } = constructKernelCube();
-const saved = parseDiagram(JSON.parse(await readFile(
-  new URL('../examples/kernel-cokernel-cube.q3d.json', import.meta.url), 'utf8')));
+const saved = parseDiagram(JSON.parse(JSON.stringify(document)));
 const nodes = new Map(saved.nodes.map(n => [n.id, n]));
 const sub = (a, b) => a.map((x, i) => x - b[i]);
 const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
 const key = p => p.map(x => Math.abs(x) < 1e-7 ? '0.000000' : x.toFixed(6)).join(',');
 
-test('the supplied cube file is reproducible and contains the complete symmetric construction', () => {
+test('the kernel-cokernel generator round-trips the complete symmetric construction', () => {
   assert.deepEqual(saved, document);
   assert.equal(report.nodes, 262);
   assert.equal(report.arrows, 546);

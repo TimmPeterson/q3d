@@ -90,7 +90,8 @@ export function createEdgeGeometry(edge: DiagramEdge, source: DiagramNode, targe
   const path = edgePath(edge, source, target);
   const length = Math.max(path.getLength(), 0.001);
   const material = new MeshBasicMaterial({ color: edge.color });
-  const headLength = Math.min(Math.max(0.22, edge.width * 7.5), length * 0.25);
+  const baseHeadLength = Math.min(Math.max(0.22, edge.width * 7.5), length * 0.25);
+  const headLength = Math.min(baseHeadLength * edge.headScale, length * 0.4);
   const headRadius = headLength * 0.34;
   const shaftEnd = Math.max(0.01, 1 - headLength * 0.85 / length);
   const shaft = new Mesh(new TubeGeometry(new CurveSection(path, 0, shaftEnd), 48, edge.width / 2, 8, false), material);

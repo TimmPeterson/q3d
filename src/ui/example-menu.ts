@@ -1,4 +1,4 @@
-import { EXAMPLES } from '../model/examples.ts';
+import { EXAMPLES } from '../examples.ts';
 import type { ExampleId } from '../model/examples.ts';
 
 export class ExampleMenu {
@@ -14,6 +14,7 @@ export class ExampleMenu {
     this.toggle.type = 'button';
     this.toggle.className = 'icon-button examples-toggle';
     this.toggle.textContent = 'Ex';
+    this.toggle.disabled = EXAMPLES.length === 0;
     this.toggle.dataset.tip = 'Examples';
     this.toggle.setAttribute('aria-label', 'Examples');
     this.toggle.setAttribute('aria-haspopup', 'menu');

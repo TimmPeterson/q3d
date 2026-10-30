@@ -26,6 +26,8 @@ Open the URL printed by Vite. To preview a production build, run `pnpm build`, t
 | --- | --- |
 | Select | Cursor tool, `1` / `V` |
 | Select multiple items | Shift+click toggles an item in the selection; Shift+click on empty space keeps the selection |
+| Copy selected nodes | Ctrl+C |
+| Paste copied nodes | Ctrl+V |
 | Move a node | Select it and drag the colored X, Y, or Z axis handle |
 | Add a node | `+` button or `2` / `N`: adds a sphere of size 0.2 at the center of the view on the selected plane, automatically avoiding occupied positions |
 | Create an arrow | `3` / `A`, then click the source and target; dragging from source to target also works |
@@ -50,17 +52,19 @@ On macOS, use Command instead of Ctrl for the corresponding keyboard shortcuts. 
 
 The default plane is the horizontal XZ floor, with Y pointing up. The grid has stronger lines every five cells. Orbiting keeps the camera upright, and panning follows the floor. Clicking or double-clicking empty space does not add nodes.
 
-Node properties include shape (sphere, cube, or diamond-shaped octahedron), size, color, and label. Arrow properties include type (ordinary, mono with a hooked tail, epi with a double head, or inclusion `>->` with a forward cone at each end), thickness, curvature, and reversal. Parallel arrows automatically receive different curvatures. The two handles in the Length control independently set the start and end of an arrow along its path. Reversing an arrow preserves its path and the trimming at both ends.
+Node properties include shape (sphere, cube, or diamond-shaped octahedron), size, color, and label. Arrow properties include type (ordinary, mono with a hooked tail, epi with a double head, or inclusion `>->` with a forward cone at each end), thickness, head size, curvature, and reversal. The Head size slider scales all cones on the selected arrows without changing shaft thickness. Parallel arrows automatically receive different curvatures. The two handles in the Length control independently set the start and end of an arrow along its path. Reversing an arrow preserves its path and the trimming at both ends.
 
 Orthographic projection removes the perspective effect that makes distant objects appear smaller. Switching projections preserves the viewing angle and scale at the center of the view. Orbiting, moving nodes along axes, drawing arrows, and zooming work in both modes.
 
 Selected nodes share a movement gizmo at the average of their positions. Moving or snapping translates the entire group by the same amount, preserving the distances between its members. The group's X/Y/Z fields set its center and also move the group as a whole. Arrows follow their endpoints; selecting an arrow does not automatically select its endpoints.
 
+Copying nodes copies only those nodes. To include an arrow, select it together with both of its endpoints; arrows with an unselected endpoint are skipped, and an arrow-only selection is not copied. Pasting preserves all properties and relative positions, creates new IDs, and offsets the group to a nearby free position in the current placement plane. The pasted items are selected for moving or editing, and the entire paste can be undone in one step. The clipboard also works between diagrams and browser tabs. Copy and paste inside text and coordinate fields retain their usual behavior.
+
 Property edits apply to all selected items. Mixed values appear as “—”; checkboxes with mixed states show an indeterminate mark. Only the property you explicitly edit changes. A selection containing both nodes and arrows shows only their shared properties: label, billboard mode, and color. Trimming multiple arrows is constrained so that each retains a valid length. Group edits, movement, arrow reversal, and deletion can each be undone in one step. Deleting nodes also deletes their connected arrows.
 
 Billboard mode makes a label face the camera. When disabled, the label remains fixed in the world XY plane. Labels use plain Unicode text without LaTeX processing. The editor does not check commutativity.
 
-The diagram is saved automatically in your browser. The save button downloads a `.q3d.json` file; the open button imports one. Creating a new diagram or importing a file can be undone with Ctrl+Z. The `Ex` menu at the top right opens the bundled Commutative cube and Kernels and cokernels examples. Choosing an example replaces the current diagram, fits it in view, and can be undone with Ctrl+Z. The same JSON files are available in the `examples` directory. Both examples are included in the static build for GitHub Pages.
+The diagram is saved automatically in your browser. The save button downloads a `.q3d.json` file; the open button imports one. Creating a new diagram or importing a file can be undone with Ctrl+Z. The `Ex` menu at the top right automatically lists all `*.q3d.json` files directly inside `examples/`, sorted by name. Menu titles come from the filenames, with hyphens and underscores displayed as spaces. Other files and subdirectories are ignored. Choosing an example replaces the current diagram, fits it in view, and can be undone with Ctrl+Z. To add an example, put its file in `examples/`; Vite discovers it automatically, and the next build includes it in the static website for GitHub Pages.
 
 `examples/kernel-cokernel-cube.q3d.json` is a symmetric diagram of kernels, cokernels, and comparison maps for a commutative cube, containing 262 objects and 546 arrows. Its construction and visual conventions are described in the [accompanying notes](examples/kernel-cokernel-cube.md) (in Russian).
 

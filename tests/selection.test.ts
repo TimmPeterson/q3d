@@ -122,6 +122,26 @@ test('bulk shortening respects every selected arrow without changing its opposit
   assert.deepEqual(parseDiagram(JSON.parse(JSON.stringify(store.document))), store.document);
 });
 
+test('resizing heads in a group preserves arrow types and thickness and is one undo step', () => {
+  const store = new DiagramStore();
+  const a = store.addNode([0, 0, 0]);
+  const b = store.addNode([4, 0, 0]);
+  const f = store.addEdge(a, b, { kind: 'epi', headScale: 0.5, width: 0.02 })!;
+  const g = store.addEdge(b, a, { kind: 'inclusion', headScale: 2, width: 0.06 })!;
+  store.addEdge(a, a);
+  const before = structuredClone(store.document);
+  store.beginTransaction();
+  store.updateEdges([f, g], { headScale: 1.25 });
+  store.updateEdges([f, g], { headScale: 0.4 });
+  store.finishTransaction();
+  assert.deepEqual(store.document.edges, before.edges.map((edge, i) => i < 2 ? { ...edge, headScale: 0.4 } : edge));
+  const resized = structuredClone(store.document);
+  store.undo();
+  assert.deepEqual(store.document, before);
+  store.redo();
+  assert.deepEqual(store.document, resized);
+});
+
 test('deleting a mixed selection cascades once, retains unrelated arrows and supports undo', () => {
   const store = new DiagramStore();
   const a = store.addNode([0, 0, 0]);

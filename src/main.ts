@@ -1,8 +1,10 @@
 import './style.css';
 import { DiagramStore } from './model/store.ts';
 import { parseDiagram } from './model/document.ts';
+import { CLIPBOARD_MIME, copySelection, parseClipboard, pasteStep, serializeClipboard } from './model/clipboard.ts';
 import { loadExample } from './model/examples.ts';
 import type { ExampleId } from './model/examples.ts';
+import { EXAMPLES } from './examples.ts';
 import { downloadDocument, restoreDocument, saveDocument } from './model/persistence.ts';
 import { emptyDiagram } from './model/types.ts';
 import type { Diagram, Selection, SelectionSet, Tool, Vec3 } from './model/types.ts';
@@ -82,6 +84,8 @@ class Editor {
     this.setTool('select');
 
     window.addEventListener('keydown', this.onKeyDown, { signal: this.abort.signal });
+    window.addEventListener('copy', this.onCopy, { signal: this.abort.signal });
+    window.addEventListener('paste', this.onPaste, { signal: this.abort.signal });
     window.addEventListener('pagehide', this.persist, { signal: this.abort.signal });
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') this.persist();
@@ -89,7 +93,10 @@ class Editor {
   }
 
   private select(selection: Selection, additive = false): void {
-    const next = chooseSelection(this.selection, selection, additive);
+    this.applySelection(chooseSelection(this.selection, selection, additive));
+  }
+
+  private applySelection(next: SelectionSet): void {
     if (selectionKey(this.selection) !== selectionKey(next)) this.store.finishTransaction();
     this.selection = next;
     this.view.select(next, this.arrowSource);
@@ -100,7 +107,7 @@ class Editor {
   private rememberArrowDefaults(): void {
     if (this.selection.length === 1 && this.selection[0].type === 'edge') {
       const edge = this.store.document.edges.find((item) => item.id === this.selection[0].id);
-      if (edge) this.interactions.edgeDefaults = { kind: edge.kind, width: edge.width, color: edge.color, labelMode: edge.labelMode };
+      if (edge) this.interactions.edgeDefaults = { kind: edge.kind, width: edge.width, headScale: edge.headScale, color: edge.color, labelMode: edge.labelMode };
     }
   }
 
@@ -172,7 +179,7 @@ class Editor {
     this.exampleRequest = request;
     this.ui.setExamplesLoading(true);
     try {
-      const diagram = await loadExample(id, request.signal);
+      const diagram = await loadExample(EXAMPLES, id, request.signal);
       if (request.signal.aborted) return;
       this.replaceDocument(diagram);
     } catch {
@@ -182,10 +189,42 @@ class Editor {
     }
   }
 
+  private isTextEditing(target: EventTarget | null): boolean {
+    return target instanceof HTMLElement && (target.isContentEditable || target instanceof HTMLTextAreaElement ||
+      (target instanceof HTMLInputElement && ['text', 'number', 'search', 'email', 'url', 'tel', 'password'].includes(target.type)));
+  }
+
+  private onCopy = (event: ClipboardEvent): void => {
+    if (event.defaultPrevented || this.isTextEditing(event.target) || !event.clipboardData) return;
+    const fragment = copySelection(this.store.document, this.selection);
+    if (!fragment) return;
+    const text = serializeClipboard(fragment);
+    event.clipboardData.setData('text/plain', text);
+    try { event.clipboardData.setData(CLIPBOARD_MIME, text); } catch { /* Plain text is the portable fallback. */ }
+    event.preventDefault();
+  };
+
+  private onPaste = (event: ClipboardEvent): void => {
+    if (event.defaultPrevented || this.isTextEditing(event.target) || !event.clipboardData) return;
+    const fragment = parseClipboard(event.clipboardData.getData(CLIPBOARD_MIME) || event.clipboardData.getData('text/plain'));
+    if (!fragment) return;
+    event.preventDefault();
+    try {
+      this.interactions.cancel();
+      const wasEmpty = this.store.document.nodes.length === 0;
+      const selection = this.store.paste(fragment, pasteStep(this.interactions.plane));
+      this.setTool('select');
+      this.applySelection(selection);
+      if (wasEmpty) this.view.focus(this.store.document, 'home');
+      this.view.canvas.focus();
+    } catch (error) {
+      this.ui.toast(error instanceof Error ? error.message : 'Could not paste selection.');
+    }
+  };
+
   private onKeyDown = (event: KeyboardEvent): void => {
     const target = event.target as HTMLElement;
-    const editing = target instanceof HTMLTextAreaElement || target.isContentEditable ||
-      (target instanceof HTMLInputElement && ['text', 'number', 'search', 'email', 'url', 'tel', 'password'].includes(target.type));
+    const editing = this.isTextEditing(target);
     const modifier = event.ctrlKey || event.metaKey;
     if (modifier && event.code === 'KeyS') {
       event.preventDefault();

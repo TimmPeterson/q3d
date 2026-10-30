@@ -1,6 +1,6 @@
 import { icon, iconButton } from './icons.ts';
 import { nodeCenter, selectedItems, selectionKey, sharedValue } from '../model/selection.ts';
-import { ARROW_MIN_SPAN } from '../model/types.ts';
+import { ARROW_HEAD_SCALE_MAX, ARROW_HEAD_SCALE_MIN, ARROW_MIN_SPAN } from '../model/types.ts';
 import type { CommonProperties, Diagram, DiagramEdge, DiagramNode, SelectionSet } from '../model/types.ts';
 
 const PALETTE = ['#45494f', '#557aa6', '#7b6ba6', '#599482', '#c78358', '#bd6770'];
@@ -96,7 +96,7 @@ export class SelectionInspector {
             ${isNode ? ['sphere', 'cube', 'diamond'].map((shape, index) => `<button type="button" data-shape="${shape}" title="${['Sphere', 'Cube', 'Diamond'][index]}" aria-label="${['Sphere', 'Cube', 'Diamond'][index]}" aria-pressed="false">${icon(shape)}</button>`).join('')
               : ['arrow', 'mono', 'epi', 'inclusion'].map((kind, index) => `<button type="button" data-kind="${kind}" title="${['Ordinary', 'Monomorphism', 'Epimorphism', 'Inclusion'][index]}" aria-label="${['Ordinary arrow', 'Monomorphism', 'Epimorphism', 'Inclusion'][index]}" aria-pressed="false">${icon(kind)}</button>`).join('')}
           </div>
-          ${isNode ? this.slider('size', 'Size', 0.1, 4, 0.01) : this.lengthControls() + this.slider('width', 'Thickness', 0.015, 0.12, 0.001) + this.slider('bend', 'Curvature', -4, 4, 0.05)}
+          ${isNode ? this.slider('size', 'Size', 0.1, 4, 0.01) : this.lengthControls() + this.slider('width', 'Thickness', 0.015, 0.12, 0.001) + this.slider('headScale', 'Head size', ARROW_HEAD_SCALE_MIN, ARROW_HEAD_SCALE_MAX, 0.05) + this.slider('bend', 'Curvature', -4, 4, 0.05)}
         ` : ''}
         <div class="field-label color-heading">Color</div>
         <div class="color-palette" role="group" aria-label="Color">
@@ -167,7 +167,7 @@ export class SelectionInspector {
     const value = input.valueAsNumber;
     if (field === 'start' || field === 'end') this.actions.updateEdge({ [field]: value / 100 });
     if (field === 'size') this.actions.updateNode({ size: value });
-    if (field === 'width' || field === 'bend') this.actions.updateEdge({ [field]: value });
+    if (field === 'width' || field === 'headScale' || field === 'bend') this.actions.updateEdge({ [field]: value });
     if (field?.startsWith('position-')) this.actions.position(Number(field.slice(-1)), value);
   };
 
@@ -221,7 +221,7 @@ export class SelectionInspector {
       });
     }
     if (this.mode === 'edges') {
-      for (const field of ['width', 'bend', 'start', 'end'] as const) {
+      for (const field of ['width', 'headScale', 'bend', 'start', 'end'] as const) {
         const values = this.edges.map((edge) => edge[field]);
         const factor = field === 'start' || field === 'end' ? 100 : 1;
         const common = sharedValue(values);

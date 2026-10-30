@@ -1,6 +1,7 @@
 import { ARROW_MIN_SPAN, EDGE_DEFAULTS, NODE_DEFAULTS, emptyDiagram } from './types.ts';
 import type { CommonProperties, Diagram, DiagramEdge, DiagramNode, Selection, SelectionSet, Vec3 } from './types.ts';
 import { translatedPositions } from './selection.ts';
+import { preparePaste } from './clipboard.ts';
 
 type Listener = (diagram: Diagram) => void;
 const equal = (left: Diagram, right: Diagram): boolean => JSON.stringify(left) === JSON.stringify(right);
@@ -161,6 +162,20 @@ export class DiagramStore {
 
   replace(document: Diagram): void {
     this.change((draft) => Object.assign(draft, structuredClone(document)));
+  }
+
+  paste(fragment: Diagram, step: Vec3): SelectionSet {
+    const addition = preparePaste(this.value, fragment, step);
+    if (!addition.nodes.length) return [];
+    this.finishTransaction();
+    this.change((draft) => {
+      draft.nodes.push(...addition.nodes);
+      draft.edges.push(...addition.edges);
+    });
+    return [
+      ...addition.nodes.map(node => ({ type: 'node' as const, id: node.id })),
+      ...addition.edges.map(edge => ({ type: 'edge' as const, id: edge.id })),
+    ];
   }
 
   undo(): void {

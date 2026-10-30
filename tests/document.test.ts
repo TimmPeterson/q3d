@@ -62,7 +62,7 @@ test('reversing an arrow preserves its curve and can be undone', () => {
 test('saved diagrams round-trip all object and arrow properties', () => {
   const store = new DiagramStore();
   const a = store.addNode([-3, 1, 7], { shape: 'diamond', label: 'A ⊗ B', labelMode: 'fixed', color: '#557aa6' });
-  store.addEdge(a, a, { kind: 'epi', label: 'id', bend: 2 });
+  store.addEdge(a, a, { kind: 'epi', label: 'id', bend: 2, headScale: 0.55 });
   assert.deepEqual(parseDiagram(JSON.parse(serializeDiagram(store.document))), store.document);
 });
 
@@ -79,6 +79,9 @@ test('import rejects broken references, duplicate ids, unsafe numbers and unsupp
   assert.throws(() => parseDiagram({ ...doc, nodes: [{ ...doc.nodes[0], color: 'url(x)' }] }));
   assert.throws(() => parseDiagram({ ...doc, edges: [{ ...doc.edges[0], start: 0.9, end: 0.4 }] }));
   assert.throws(() => parseDiagram({ ...doc, edges: [{ ...doc.edges[0], start: 0.5, end: 0.51 }] }));
+  for (const headScale of [0, -1, 3.1, NaN, Infinity, null, '1']) {
+    assert.throws(() => parseDiagram({ ...doc, edges: [{ ...doc.edges[0], headScale }] }));
+  }
 });
 
 test('older diagrams keep working and the removed combined arrow migrates to mono', () => {
@@ -89,10 +92,12 @@ test('older diagrams keep working and the removed combined arrow migrates to mon
   old.edges[0].kind = 'mono-epi';
   delete old.edges[0].start;
   delete old.edges[0].end;
+  delete old.edges[0].headScale;
   const restored = parseDiagram(old);
   assert.equal(restored.edges[0].kind, 'mono');
   assert.equal(restored.edges[0].start, 0);
   assert.equal(restored.edges[0].end, 1);
+  assert.equal(restored.edges[0].headScale, 1);
 });
 
 test('reversing a shortened arrow swaps its ends and undo restores its range', () => {

@@ -6,6 +6,10 @@ export type Tool = 'select' | 'arrow';
 export type WorkPlane = 'XY' | 'XZ' | 'YZ';
 export type Projection = 'perspective' | 'orthographic';
 export const ARROW_MIN_SPAN = 0.05;
+export const ARROW_HEAD_SCALE_MIN = 0.2;
+export const ARROW_HEAD_SCALE_MAX = 3;
+export const DIAGRAM_MAX_NODES = 2000;
+export const DIAGRAM_MAX_EDGES = 5000;
 
 export interface DiagramNode {
   id: string;
@@ -24,6 +28,7 @@ export interface DiagramEdge {
   kind: ArrowKind;
   color: string;
   width: number;
+  headScale: number;
   bend: number;
   start: number;
   end: number;
@@ -54,6 +59,7 @@ export const EDGE_DEFAULTS: Omit<DiagramEdge, 'id' | 'source' | 'target'> = {
   kind: 'arrow',
   color: '#45494f',
   width: 0.035,
+  headScale: 1,
   bend: 0,
   start: 0,
   end: 1,

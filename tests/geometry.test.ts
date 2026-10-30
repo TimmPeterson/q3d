@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Vector3 } from 'three';
+import { ConeGeometry, Mesh, TubeGeometry, Vector3 } from 'three';
 import { createEdgeGeometry, edgePath, surfaceDistance } from '../src/scene/edge-geometry.ts';
 import { NODE_DEFAULTS, EDGE_DEFAULTS } from '../src/model/types.ts';
 
@@ -40,6 +40,58 @@ test('inclusions have a forward cone at the start; epi keeps both cones at the e
   assert.ok(heads.every((head) => head.position.distanceTo(epi.path.getPointAt(1)) < epi.path.getLength() / 4));
   inclusion.dispose();
   epi.dispose();
+});
+
+test('head size scales every cone without changing shaft thickness or the final tip', () => {
+  const source = { ...NODE_DEFAULTS, id: 'a', position: [0, 0, 0] as [number, number, number] };
+  const target = { ...source, id: 'b', position: [5, 0, 0] as [number, number, number] };
+  const cones = (geometry: ReturnType<typeof createEdgeGeometry>) => geometry.group.children.filter(
+    (child): child is Mesh<ConeGeometry> => child instanceof Mesh && child.geometry instanceof ConeGeometry,
+  );
+  for (const kind of ['arrow', 'mono', 'epi', 'inclusion'] as const) {
+    const edge = { ...EDGE_DEFAULTS, id: 'e', source: 'a', target: 'b', kind };
+    const original = createEdgeGeometry(edge, source, target);
+    const originalHeads = cones(original);
+    assert.equal(originalHeads.length, kind === 'epi' || kind === 'inclusion' ? 2 : 1);
+    assert.ok(Math.abs(originalHeads[0].geometry.parameters.height - 0.2625) < 1e-9);
+    for (const headScale of [0.2, 0.5, 2, 3]) {
+      const resized = createEdgeGeometry({ ...edge, headScale }, source, target);
+      const heads = cones(resized);
+      assert.equal(heads.length, originalHeads.length);
+      heads.forEach((head, i) => {
+        assert.ok(Math.abs(head.geometry.parameters.height / originalHeads[i].geometry.parameters.height - headScale) < 1e-9);
+        assert.ok(Math.abs(head.geometry.parameters.radius / originalHeads[i].geometry.parameters.radius - headScale) < 1e-9);
+      });
+      const tip = heads[0].position.clone().add(new Vector3(0, heads[0].geometry.parameters.height / 2, 0).applyQuaternion(heads[0].quaternion));
+      assert.ok(tip.distanceTo(original.path.getPointAt(1)) < 1e-9);
+      assert.ok(resized.group.children.some(child => child instanceof Mesh && child.geometry instanceof TubeGeometry &&
+        child.geometry.parameters.radius === edge.width / 2));
+      resized.dispose();
+    }
+    original.dispose();
+  }
+});
+
+test('large heads fit shortened arrows, including epi and inclusion, and small heads remain adjustable', () => {
+  const source = { ...NODE_DEFAULTS, id: 'a', position: [0, 0, 0] as [number, number, number] };
+  const target = { ...source, id: 'b', position: [0.5, 0, 0] as [number, number, number] };
+  for (const kind of ['arrow', 'epi', 'inclusion'] as const) {
+    let smallHeight = 0;
+    for (const headScale of [0.2, 1, 3]) {
+      const geometry = createEdgeGeometry({ ...EDGE_DEFAULTS, id: 'e', source: 'a', target: 'b', kind, start: 0.25, end: 0.4, headScale }, source, target);
+      const start = geometry.path.getPointAt(0).x, end = geometry.path.getPointAt(1).x;
+      for (const child of geometry.group.children) {
+        if (!(child instanceof Mesh) || !(child.geometry instanceof ConeGeometry)) continue;
+        const height = child.geometry.parameters.height;
+        assert.ok(height > 0 && height <= (end - start) * 0.4 + 1e-9);
+        assert.ok(child.position.x - height / 2 >= start - 1e-9);
+        assert.ok(child.position.x + height / 2 <= end + 1e-9);
+        if (headScale === 0.2) smallHeight = height;
+        else assert.ok(height > smallHeight);
+      }
+      geometry.dispose();
+    }
+  }
 });
 
 test('loops, overlapping nodes and vertical arrows have finite paths', () => {

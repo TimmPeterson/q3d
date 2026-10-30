@@ -44,8 +44,8 @@ button svg { pointer-events: none; width: 20px; height: 20px; flex-shrink: 0; }
 .examples-toggle { font-size: 13px; font-weight: 550; letter-spacing: -0.2px; }
 .examples-toggle[aria-expanded="true"] { color: #31363c; background: #f2f2f1; }
 .examples-toggle[aria-busy="true"] { opacity: 0.5; }
-.examples-menu { position: absolute; top: calc(100% + 12px); right: 0; width: 220px; max-width: calc(100vw - 28px); padding: 5px; z-index: 3; }
-.examples-menu button { display: block; width: 100%; padding: 11px 12px; border: 0; border-radius: 7px; background: transparent; text-align: left; font-size: 12px; color: #686e78; }
+.examples-menu { position: absolute; top: calc(100% + 12px); right: 0; width: 220px; max-width: calc(100vw - 28px); max-height: calc(100dvh - 100px); overflow-y: auto; padding: 5px; z-index: 3; }
+.examples-menu button { display: block; width: 100%; padding: 11px 12px; border: 0; border-radius: 7px; background: transparent; text-align: left; font-size: 12px; color: #686e78; overflow-wrap: anywhere; }
 .examples-menu button:hover, .examples-menu button:focus-visible { color: #31363c; background: #f2f2f1; outline-offset: -2px; }
 
 .inspector { position: absolute; top: 84px; right: 24px; width: 252px; border-radius: 13px; max-height: calc(100dvh - 210px); overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
